@@ -49,13 +49,22 @@ def main():
         prices = synthetic_prices(seed=a.seed)
 
     n = prices.shape[1]
-    w = np.full(n, 1 / n) if a.weights is None else np.asarray(a.weights)
-    if len(w) != n or not np.isclose(w.sum(), 1.0):
-        raise SystemExit(f"Bobot harus {n} angka dan berjumlah 1 (sekarang {w.sum():.3f}).")
+    w = np.full(n, 1 / n) if a.weights is None else np.asarray(a.weights, dtype=float)
+    if len(w) != n or not np.isfinite(w).all() or not np.isclose(w.sum(), 1.0):
+        raise SystemExit(f"Bobot harus {n} angka finite dan berjumlah 1 (sekarang {w.sum():.3f}).")
 
     log_r = to_log_returns(prices)
+    if len(log_r) < 2:
+        raise SystemExit("Minimal diperlukan 3 observasi harga (2 return) untuk estimasi volatilitas.")
     simple_r = np.expm1(log_r.values)
     port_r = portfolio_returns(simple_r, w)  # return harian portofolio (rebalancing harian)
+    if a.window < 1:
+        raise SystemExit("--window harus bilangan bulat positif.")
+    if len(port_r) <= a.window:
+        raise SystemExit(
+            f"Backtest memerlukan minimal {a.window + 1} return untuk --window {a.window}; "
+            f"data hanya menghasilkan {len(port_r)} return."
+        )
 
     # --- VaR 1 hari dari data historis, 3 metode ---
     one_day = {

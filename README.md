@@ -34,6 +34,8 @@ Koreksi −σ²/2 muncul dari lemma Itô; sehingga E[S_T] = S₀ e^{μT}.
 **Uji Kupiec (POF):** H₀: laju pelanggaran = 1−α.
 LR = −2 ln[ (1−p)^(n−x) p^x / ((1−x/n)^(n−x) (x/n)^x) ] ~ χ²(1)
 
+Uji POF hanya memeriksa frekuensi pelanggaran (unconditional coverage); uji ini tidak memeriksa apakah pelanggaran terjadi secara independen atau berkelompok. Untuk cakupan itu diperlukan uji tambahan, misalnya uji independensi Christoffersen.
+
 ## Instalasi
 
 ```bash
@@ -92,7 +94,9 @@ tests/       # tes unit (pytest)
 pytest -q
 ```
 
-Tes memverifikasi, antara lain: E[S_T] = S₀e^{μT}, std log-return = σ, korelasi antar aset terjaga, VaR parametrik = rumus tertutup, CVaR > VaR, dan uji Kupiec.
+Tes memverifikasi, antara lain: E[S_T] = S₀e^{μT}, std log-return = σ, korelasi antar aset terjaga, VaR parametrik = rumus tertutup, dan CVaR > VaR. Validasi data menguji harga numerik yang positif dan finite, tanggal unik/berurutan, serta pesan CLI untuk histori terlalu pendek. Estimasi volatilitas memerlukan minimal 3 observasi harga; backtest dengan window `w` memerlukan lebih dari `w` return agar tersedia setidaknya satu observasi out-of-sample.
+
+Cakupan uji Kupiec meliputi frekuensi pelanggaran sesuai ekspektasi dan yang berlebih, batas 0 maupun semua observasi melanggar, serta penolakan jumlah observasi/count dan alpha yang tidak valid. Backtest rolling juga menguji window yang tidak valid, histori tepat sepanjang window, dan histori minimum `window + 1`.
 
 ## Keterbatasan
 
